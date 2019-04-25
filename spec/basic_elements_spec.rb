@@ -12,10 +12,9 @@ describe "Basic elements test" do
   let(:add_remove_elements_page) { AddRemoveElementsPage.new(@driver, true) }
   let(:dropdown_page) { DropdownPage.new(@driver, true) }
   let(:status_codes_page) { StatusCodesPage.new(@driver, true) }
-  let(:open_main_page) { spec_helper.open }
 
   describe "when Main page loaded" do
-    let!(:open_main) { open_main_page }
+    before(:each) { spec_helper.open }
 
     it "heading should have correct text" do
       expect(main_page.heading).to eq("Welcome to the-internet")
@@ -27,10 +26,8 @@ describe "Basic elements test" do
   end
 
   describe "when Add/Remove Elements page loaded" do
-    let(:add_element) { add_remove_elements_page.add_element_button }
-    let(:delete_element) { add_remove_elements_page.delete_element_button }
+    before(:each) { spec_helper.open }
 
-    let!(:open_main) { open_main_page }
     let!(:open_add_remove_elements_page) { main_page.add_remove_elements_link }
 
     it "heading should have correct text" do
@@ -50,7 +47,7 @@ describe "Basic elements test" do
     end
 
     describe "when Add Element button clicked" do
-      let!(:add_element_click) { add_element }
+      before(:each) { add_remove_elements_page.add_element_button }
 
       it "Delete button should exist" do
         expect(add_remove_elements_page.delete_element_button?).to be_truthy
@@ -63,16 +60,18 @@ describe "Basic elements test" do
 
     describe "when Delete Element button clicked" do
       it "Delete button should not exist" do
-        add_element
-        delete_element
+        add_remove_elements_page.add_element_button
+        add_remove_elements_page.delete_element_button
         expect(add_remove_elements_page.delete_element_button?).to be_falsey
       end
     end
   end
 
   describe "when Dropdown page loaded" do
-    let!(:open_main) { open_main_page }
-    let!(:open_dropdown_page) { main_page.dropdown_link }
+    before(:each) do
+      spec_helper.open
+      main_page.dropdown_link
+    end
 
     it "heading should have correct text" do
       expect(dropdown_page.heading).to eq("Dropdown List")
@@ -98,8 +97,10 @@ describe "Basic elements test" do
   end
 
   describe "when Status Code page loaded" do
-    let!(:open_main) { open_main_page }
-    let!(:open_status_codes_page) { main_page.status_codes_link }
+    before(:each) do
+      spec_helper.open
+      main_page.status_codes_link
+    end
 
     it "heading should have correct text" do
       expect(status_codes_page.heading).to eq("Status Codes")
