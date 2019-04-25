@@ -7,125 +7,111 @@ require 'selenium-webdriver'
 
 describe "Basic elements test" do
 
-  before(:all) do
-    @spec_helper = SpecHelper.new(@driver, true)
-    @main_page = MainPage.new(@driver, true)
-    @add_remove_elements_page = AddRemoveElementsPage.new(@driver, true)
-    @dropdown_page = DropdownPage.new(@driver, true)
-    @status_codes_page = StatusCodesPage.new(@driver, true)
-    @spec_helper.open
-  end
+  let(:spec_helper) { SpecHelper.new(@driver, true) }
+  let(:main_page) { MainPage.new(@driver, true) }
+  let(:add_remove_elements_page) { AddRemoveElementsPage.new(@driver, true) }
+  let(:dropdown_page) { DropdownPage.new(@driver, true) }
+  let(:status_codes_page) { StatusCodesPage.new(@driver, true) }
+  let(:open_main_page) { spec_helper.open }
 
   describe "when Main page loaded" do
-    subject { @main_page }
+    let!(:open_main) { open_main_page }
 
     it "heading should have correct text" do
-      expect(subject.heading).to eq("Welcome to the-internet")
+      expect(main_page.heading).to eq("Welcome to the-internet")
     end
 
     it "example list should have correct title" do
-      expect(subject.example_list_title).to eq("Available Examples")
+      expect(main_page.example_list_title).to eq("Available Examples")
     end
   end
 
   describe "when Add/Remove Elements page loaded" do
-    subject { @add_remove_elements_page }
+    let(:add_element) { add_remove_elements_page.add_element_button }
+    let(:delete_element) { add_remove_elements_page.delete_element_button }
 
-    before(:all) { @main_page.add_remove_elements_link }
+    let!(:open_main) { open_main_page }
+    let!(:open_add_remove_elements_page) { main_page.add_remove_elements_link }
 
     it "heading should have correct text" do
-      expect(subject.heading).to eq("Add/Remove Elements")
+      expect(add_remove_elements_page.heading).to eq("Add/Remove Elements")
     end
 
     it "Add Element button should be visible" do
-      expect(subject.add_element_button?).to be_truthy
+      expect(add_remove_elements_page.add_element_button?).to be_truthy
     end
 
     it "Add Element button should have correct text" do
-      expect(subject.add_element_button_element.text).to eq("Add Element")
+      expect(add_remove_elements_page.add_element_button_element.text).to eq("Add Element")
     end
 
     it "Delete Element button should not exist" do
-      expect(subject.delete_element_button?).to be_falsey
+      expect(add_remove_elements_page.delete_element_button?).to be_falsey
     end
 
     describe "when Add Element button clicked" do
-      before(:all) { @add_remove_elements_page.add_element_button }
-      after(:all) { @add_remove_elements_page.delete_element_button }
+      let!(:add_element_click) { add_element }
 
       it "Delete button should exist" do
-        expect(subject.delete_element_button?).to be_truthy
+        expect(add_remove_elements_page.delete_element_button?).to be_truthy
       end
 
       it "Add Element button should have correct text" do
-        expect(subject.delete_element_button_element.text).to eq("Delete")
+        expect(add_remove_elements_page.delete_element_button_element.text).to eq("Delete")
       end
     end
 
     describe "when Delete Element button clicked" do
-      before(:all) do
-        @add_remove_elements_page.add_element_button
-        @add_remove_elements_page.delete_element_button
-      end
-
       it "Delete button should not exist" do
-        expect(subject.delete_element_button?).to be_falsey
+        add_element
+        delete_element
+        expect(add_remove_elements_page.delete_element_button?).to be_falsey
       end
     end
   end
 
   describe "when Dropdown page loaded" do
-    subject { @dropdown_page }
-
-    before(:all) do
-      @spec_helper.open
-      @main_page.dropdown_link
-    end
+    let!(:open_main) { open_main_page }
+    let!(:open_dropdown_page) { main_page.dropdown_link }
 
     it "heading should have correct text" do
-      expect(subject.heading).to eq("Dropdown List")
+      expect(dropdown_page.heading).to eq("Dropdown List")
     end
 
     it "dropdown list should have text for blank list selected" do
-      expect(subject.dropdown_list).to eq("Please select an option")
+      expect(dropdown_page.dropdown_list).to eq("Please select an option")
     end
 
     describe "when first option selected" do
-      before(:all) { @dropdown_page.dropdown_list="1" }
-
       it "dropdown list should have text for first option selected" do
-        expect(subject.dropdown_list).to eq("Option 1")
+        dropdown_page.dropdown_list="1"
+        expect(dropdown_page.dropdown_list).to eq("Option 1")
       end
     end
 
     describe "when second option selected" do
-      before(:all) { @dropdown_page.dropdown_list="2" }
-
       it "dropdown list should have text for first option selected" do
-        expect(subject.dropdown_list).to eq("Option 2")
+        dropdown_page.dropdown_list="2"
+        expect(dropdown_page.dropdown_list).to eq("Option 2")
       end
     end
   end
 
   describe "when Status Code page loaded" do
-    subject { @status_codes_page }
-
-    before(:all) do
-      @spec_helper.open
-      @main_page.status_codes_link
-    end
+    let!(:open_main) { open_main_page }
+    let!(:open_status_codes_page) { main_page.status_codes_link }
 
     it "heading should have correct text" do
-      expect(subject.heading).to eq("Status Codes")
+      expect(status_codes_page.heading).to eq("Status Codes")
     end
 
     describe "when each status code link clicked" do
       %w(200 301 404 500).each do |code|
         describe "when #{code} status code link clicked" do
           it 'page context should have correct text' do
-            subject.code_link(code)
-            expect(subject.page_content_text_element.text).to include("This page returned a #{code} status code")
-            subject.status_code_list_link
+            status_codes_page.code_link(code)
+            expect(status_codes_page.page_content_text_element.text).to include("This page returned a #{code} status code")
+            status_codes_page.status_code_list_link
           end
         end
       end
