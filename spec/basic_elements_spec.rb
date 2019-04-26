@@ -7,126 +7,95 @@ require 'selenium-webdriver'
 
 describe "Basic elements test" do
 
-  before(:all) do
-    @spec_helper = SpecHelper.new(@driver, true)
-    @main_page = MainPage.new(@driver, true)
-    @add_remove_elements_page = AddRemoveElementsPage.new(@driver, true)
-    @dropdown_page = DropdownPage.new(@driver, true)
-    @status_codes_page = StatusCodesPage.new(@driver, true)
-    @spec_helper.open
-  end
+  define_method(:spec_helper) { SpecHelper.new(@driver, true) }
+  define_method(:main_page) { MainPage.new(@driver, true) }
+  define_method(:add_remove_elements_page) { AddRemoveElementsPage.new(@driver, true) }
+  define_method(:dropdown_page) { DropdownPage.new(@driver, true) }
+  define_method(:status_codes_page) { StatusCodesPage.new(@driver, true) }
 
   describe "when Main page loaded" do
-    subject { @main_page }
+    before(:all) { spec_helper.open }
 
-    it "heading should have correct text" do
-      expect(subject.heading).to eq("Welcome to the-internet")
-    end
-
-    it "example list should have correct title" do
-      expect(subject.example_list_title).to eq("Available Examples")
+    it "heading and example list should have correct text", :aggregate_failures do
+        expect(main_page.heading).to eq("Welcome to the-internet")
+        expect(main_page.example_list_title).to eq("Available Examples")
     end
   end
 
   describe "when Add/Remove Elements page loaded" do
-    subject { @add_remove_elements_page }
-
-    before(:all) { @main_page.add_remove_elements_link }
-
-    it "heading should have correct text" do
-      expect(subject.heading).to eq("Add/Remove Elements")
+    before(:all) do
+      spec_helper.open
+      main_page.add_remove_elements_link
     end
 
-    it "Add Element button should be visible" do
-      expect(subject.add_element_button?).to be_truthy
-    end
-
-    it "Add Element button should have correct text" do
-      expect(subject.add_element_button_element.text).to eq("Add Element")
-    end
-
-    it "Delete Element button should not exist" do
-      expect(subject.delete_element_button?).to be_falsey
+    it "heading and Add Element button should have correct text, " +
+       "Add Element button should be visible, " +
+       "Delete Element button should not exist", :aggregate_failures do
+        expect(add_remove_elements_page.heading).to eq("Add/Remove Elements")
+        expect(add_remove_elements_page.add_element_button?).to be_truthy
+        expect(add_remove_elements_page.add_element_button_element.text).to eq("Add Element")
+        expect(add_remove_elements_page.delete_element_button?).to be_falsey
     end
 
     describe "when Add Element button clicked" do
-      before(:all) { @add_remove_elements_page.add_element_button }
-      after(:all) { @add_remove_elements_page.delete_element_button }
+      before(:all) { add_remove_elements_page.add_element_button }
+      after(:all) { add_remove_elements_page.delete_element_button }
 
-      it "Delete button should exist" do
-        expect(subject.delete_element_button?).to be_truthy
-      end
-
-      it "Add Element button should have correct text" do
-        expect(subject.delete_element_button_element.text).to eq("Delete")
+      it "Delete button should exist and should have correct text", :aggregate_failures do
+          expect(add_remove_elements_page.delete_element_button?).to be_truthy
+          expect(add_remove_elements_page.delete_element_button_element.text).to eq("Delete")
       end
     end
 
     describe "when Delete Element button clicked" do
       before(:all) do
-        @add_remove_elements_page.add_element_button
-        @add_remove_elements_page.delete_element_button
+        add_remove_elements_page.add_element_button
+        add_remove_elements_page.delete_element_button
       end
 
       it "Delete button should not exist" do
-        expect(subject.delete_element_button?).to be_falsey
+        expect(add_remove_elements_page.delete_element_button?).to be_falsey
       end
     end
   end
 
   describe "when Dropdown page loaded" do
-    subject { @dropdown_page }
-
     before(:all) do
-      @spec_helper.open
-      @main_page.dropdown_link
+      spec_helper.open
+      main_page.dropdown_link
     end
 
-    it "heading should have correct text" do
-      expect(subject.heading).to eq("Dropdown List")
+    it "heading should have correct text and dropdown list should have text for blank list", :aggregate_failures do
+        expect(dropdown_page.heading).to eq("Dropdown List")
+        expect(dropdown_page.dropdown_list).to eq("Please select an option")
     end
 
-    it "dropdown list should have text for blank list selected" do
-      expect(subject.dropdown_list).to eq("Please select an option")
-    end
-
-    describe "when first option selected" do
-      before(:all) { @dropdown_page.dropdown_list="1" }
-
-      it "dropdown list should have text for first option selected" do
-        expect(subject.dropdown_list).to eq("Option 1")
-      end
-    end
-
-    describe "when second option selected" do
-      before(:all) { @dropdown_page.dropdown_list="2" }
-
-      it "dropdown list should have text for first option selected" do
-        expect(subject.dropdown_list).to eq("Option 2")
+    %w(1 2).each do |order|
+      context "when option #{order} selected" do
+        it "dropdown list should have text for option #{order} selected" do
+          dropdown_page.dropdown_list = order
+          expect(dropdown_page.dropdown_list).to eq("Option #{order}")
+        end
       end
     end
   end
 
   describe "when Status Code page loaded" do
-    subject { @status_codes_page }
-
     before(:all) do
-      @spec_helper.open
-      @main_page.status_codes_link
+      spec_helper.open
+      main_page.status_codes_link
     end
 
     it "heading should have correct text" do
-      expect(subject.heading).to eq("Status Codes")
+      expect(status_codes_page.heading).to eq("Status Codes")
     end
 
-    describe "when each status code link clicked" do
-      %w(200 301 404 500).each do |code|
-        describe "when #{code} status code link clicked" do
-          it 'page context should have correct text' do
-            subject.code_link(code)
-            expect(subject.page_content_text_element.text).to include("This page returned a #{code} status code")
-            subject.status_code_list_link
-          end
+    %w(200 301 404 500).each do |code|
+      context "when #{code} status code link clicked" do
+        it "page content should have #{code} status code" do
+          status_codes_page.code_link(code)
+          expect(status_codes_page.page_content_text_element.text).to include("This page returned a #{code} status code")
+          status_codes_page.status_code_list_link
         end
       end
     end
