@@ -1,7 +1,6 @@
 # RubyExample
 
 The example of state-full solution for Web UI tests design.
-State-less one: https://github.com/IgorYar/JavaSelenideExample
 
 ## Web application for tests
 http://the-internet.herokuapp.com/
