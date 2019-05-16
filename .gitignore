@@ -1,6 +1,2 @@
-
-*~
 .idea/
 *.lock
-.ruby-gemset
-.ruby-version
